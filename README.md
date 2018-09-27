@@ -124,7 +124,7 @@ we will need at least the below 8 dependencies:
 - org.apache.tomcat.embed:tomcat-embed-el
 - org.apache.tomcat.embed:tomcat-embed-logging-juli
 
-Alternatively if we use Spring Boot we can achieve the above using a single dependency:
+Alternatively if we use Spring Boot we can achieve the above using a `single` dependency:
 
 - org.springframework.boot:spring-boot-starter-web (Spring Boot "web" starter)
 
@@ -133,7 +133,7 @@ This single dependency will transitively pull in all of those other dependencies
 #### Benefits:
 
 1. Reduces the dependency count we need to add to our build files.
-2. Simple to add new features. We can create a `web` app by using a `web` starter, if we need to use JPA we can use the `JPA` starter, for security use `security` starter.
+2. Simple to add new features. We can create a `web` app by using a `Web` starter, if we need to use JPA we can use the `JPA` starter, for security use `Security` starter.
 3. Frees us from worrying about the versions of the dependencies used. Spring Boot pulls versions of the libraries that have been tested together and are hence compatible.
 
 ### Command-line interface

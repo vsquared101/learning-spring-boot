@@ -1,0 +1,123 @@
+_____________________
+
+Spring Boot in Action
+_____________________
+
+The best way to know for sure where you’re going when writing applications is to write tests that assert the desired behavior of an application. 
+If those tests fail, you know you have some work to do. If they pass, then you’ve arrived (at least until you think of some more tests that you can write).
+
+When it comes to writing UNIT tests, Spring is generally out of the picture. Loose coupling and interface-driven design, 
+which Spring encourages, makes it really easy to write unit tests. But Spring isn’t necessarily involved in those UNIT tests.
+
+INTEGRATION tests, on the other hand, require some help from Spring. 
+If Spring is responsible for configuring and wiring up the components in your production application, 
+then Spring should also be responsible for configuring and wiring up those components in your tests.
+
+Spring’s SpringJUnit4ClassRunner helps load a Spring application context in JUnit-based application tests. 
+Spring Boot builds on Spring’s integration testing support by enabling auto-configuration and web server startup when testing Spring Boot applications. 
+It also offers a handful of useful testing utilities.
+
+Integration Testing Autoconfiguration
+-------------------------------------
+
+At the core of everything that the Spring Framework does, its MOST ESSENTIAL task is to wire together all of the components that make up an application. 
+It does this by reading a wiring specification (whether it be XML, Java-based, Groovy-based, or otherwise), 
+instantiating beans in an application context, and injecting beans into other beans that depend on them.
+
+LET Spring do the heavy lifting even in an Integration Test - When integration testing a Spring application, it’s important to let Spring wire up
+the beans that are the target of the test the same way it wires up those beans when the application is running in production. 
+Sure, you might be able to manually instantiate the components and inject them into each other, 
+but for any substantially big application, that can be an arduous task. 
+Moreover, Spring offers additional facilities such as component-scanning, autowiring, and declarative aspects such as caching, transactions, and security. 
+Given all that would be required to recreate what Spring does, it’s generally best to let Spring do the heavy lifting, even in an integration test.
+
+Spring has offered excellent support for integration testing since version 1.1.1. 
+Since Spring 2.5, integration testing support has been offered in the form of SpringJUnit4ClassRunner, a JUnit class runner 
+that loads a Spring application context for use in a JUnit test and enables autowiring of beans into the test class.
+
+E.g.
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes=AddressBookConfiguration.class)
+public class AddressServiceTests {
+	@Autowired
+	private AddressService addressService;
+
+	@Test
+	public void testService() {
+		Address address = addressService.findByLastName("Sheman");
+		assertEquals("P", address.getFirstName());
+		assertEquals("Sherman", address.getLastName());
+		assertEquals("42 Wallaby Way", address.getAddressLine1());
+		assertEquals("Sydney", address.getCity());
+		assertEquals("New South Wales", address.getState());
+		assertEquals("2000", address.getPostCode());
+	}
+}
+
+@RunWith with SpringJUnit4ClassRunner - enables Spring integration testing.
+@ContextConfiguration - specifies how to load the application context.(here load SpringApplication context based on AddressBookConfiguration.java)
+
+SpringJUnit4ClassRunner also makes it possible to inject beans from the application context into the test itself via autowiring. 
+Because this test is targeting an AddressService bean, it is autowired into the test. 
+Finally, the testService() method makes calls to the address service and verifies the results.
+
+Q. Why should we opt for @SpringApplicationConfiguration instead of @ContextConfiguration?
+A. Even though @ContextConfiguration loads the Spring application context, it DOES NOT load it with the full Spring Boot treatment.
+Spring Boot applicationsare ultimately loaded by SpringApplication, either explicitly (as in listing 2.1) or using SpringBootServletInitializer 
+(which we’ll look at in chapter 8). SpringApplication not only loads the application context, 
+but also enables logging, the loading of external properties (application.properties or application.yml), and other features of Spring Boot. 
+If you’re using @ContextConfiguration, you won’t get those features.
+To get those features back in your integration tests, you can swap out @ContextConfiguration for Spring Boot’s @SpringApplicationConfiguration:
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes=AddressBookConfiguration.class)
+public class AddressServiceTests {
+	...
+}
+
+@SpringApplicationConfiguration loads the Spring application context using SpringApplication the same way and 
+with the same treatment it would get if it was being loaded in a production application. 
+This includes the loading of external properties and Spring Boot logging.
+
+Testing Web Applications
+------------------------
+
+Spring MVC promotes a programming model around POJOs that are annotated to declare how they should process web requests. 
+This model enables us to treat controllers just as we would any other component in our application.
+
+E.g.
+
+@RequestMapping(method=RequestMethod.POST)
+public String addToReadingList(Book book) {
+    book.setReader(reader);
+    readingListRepository.save(book);
+    return "redirect:/readingList";
+}
+
+Here if we disregard the RequestMapping annotation what we are left with is a basic Java method.
+To write a test for such as method we just need to mock the readingListRepository implementation and verify that a call was made
+to the readingListRepository save() method.
+
+The issue with the above method is that it tests the method itself and NOT that this method was called to handle a POST request.
+Also we will not be able to definitely test that the request was redirected to '/readingList' after the method was finished.
+
+To properly test a web application we need a way to throw actual HTTP requests at it and assert that it processes them correctly.
+
+There are 2 types of tests available to Spring Boot application developers to write such tests:
+
+1. Spring Mock MVC - Enables controllers to be tested in a mocked approximation of a servlet container 
+without actually starting an application server. 
+
+2. Web Integration Tests - Actually starts the application in an embedded servlet container (such as Tomcat or Jetty), 
+enabling tests that exercise the application in a real application server.
+
+
+Spring Mock MVC Tests                         v/s                               Web Integration Tests
+---------------------                                                           ---------------------
+a. Faster since servlet container is mocked                                     Slower since an embedded server is started.
+b. Bit further from real world scenario                                         Closer to the real-world apps deployed in production.
+
+1. Mocking Spring MVC
+
+

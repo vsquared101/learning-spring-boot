@@ -49,6 +49,10 @@ The rest is generic boilerplate needed to develop any web application with Sprin
 
 ```
 
+In the above code we have no configuration, no web.xml, no build specification, no application server.
+Still it is the entire application with Spring Boot taking care of the logistics of executing the application.
 
+If we have the Spring Boot CLI installed we can run the above code using:
 
+    >   spring run HelloController.groovy
 

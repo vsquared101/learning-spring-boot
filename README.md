@@ -100,7 +100,7 @@ In short, it's boilerplate configuration.
 
 Spring Boot can automatically configure these common configuration scenarios. If Spring Boot detects that we have the H2 database library in our application's classpath,
 it will automatically configure an embedded H2 database. If JdbcTemplate is in the classpath, then it will also configure a JdbcTemplate bean for us.
-There’s no need for us to worry about configuring those beans. They'll be configured for us, ready to inject into any of the beans we write.
+There's no need for us to worry about configuring those beans. They'll be configured for us, ready to inject into any of the beans we write.
 
 There's a lot more to Spring Boot auto-configuration than embedded databases and JdbcTemplate.
 There are several dozen ways that Spring Boot can take the burden of configuration off our hands,
@@ -156,4 +156,23 @@ With the Actuator installed, we can inspect the inner workings of our applicatio
 
 The Actuator exposes this information in two ways: via web endpoints or via a shell interface.
 In the latter case, we can actually open a secure shell (SSH) into our application and issue commands to inspect our application as it runs.
+
+## What Spring Boot Is NOT
+
+1. Spring Boot is NOT an application server. 
+   This misconception stems from the fact that it's possible to create web applications as self-executable JAR files that can be
+   run at the command line without deploying applications to a conventional Java application server. 
+   Spring Boot accomplishes this by embedding a servlet container (Tomcat, Jetty, or Undertow) within the application. 
+   But it's the embedded servlet container that provides application server functionality, not Spring Boot itself.
+
+2. Spring Boot doesn't implement any enterprise Java specifications such as JPA or JMS. 
+   It does support several enterprise Java specifications, but it does so by automatically configuring beans in Spring that support those features. 
+   For instance, Spring Boot doesn't implement JPA, but it does support JPA by auto-configuring the appropriate beans for a JPA implementation (such as Hibernate).
+
+3. Spring Boot doesn't employ any form of code generation to accomplish its magic. 
+   Instead, it leverages conditional configuration features from Spring 5, along with transitive dependency resolution offered by Maven and Gradle, 
+   to automatically configure beans in the Spring application context.
+
+Spring Boot is just Spring. Inside, Spring Boot is doing the same kind of bean configuration in Spring that we might do on our own if Spring Boot didn't exist. 
+Thankfully, because Spring Boot does exist, we're freed from dealing with explicit boilerplate configuration and are able to focus on the logic that makes your application unique.
 

@@ -208,3 +208,75 @@ Commands to get list of available versions, installing a specific version, using
 
 Navigate to [Spring Starter](https://start.spring.io/) for more details on this.
 Switch to full-version at the bottom of the page to get more details such as application name, list of dependencies, etc.
+
+Spring Initializer can be used in several ways:
+
+- Through a web-based interface.
+- Via Spring Tool Suite.
+- Via IntelliJ IDEA.
+- Using the Spring Boot CLI.
+
+In Spring Initializer create a project with below details:
+
+1. Artifact: myapp
+2. Package Name: myapp
+3. Type: Gradle Project
+4. Dependencies: Web and JPA
+
+Using above details and clicking on `Generate Project` will create `myapp.zip` file for us.
+Unzip the same and we will get a project which includes the below files:
+
+- build.gradle - A Gradle build specification. Had we chosen a Maven project, this would be replaced with pom.xml.
+- Application.java - A class with a main() method to bootstrap the application.
+- ApplicationTests.java - An empty JUnit test class instrumented to load a Spring application context using Spring Boot auto-configuration.
+- application.properties - An empty properties file for us to add configuration properties to as we see fit.
+- `static` folder - To put any static content(JavaScript, stylesheets, images, etc.).
+- `templates` folder - To put templates that render model data.
+
+Using the Initializer from Spring Boot CLI:
+
+To create a baseline Spring Boot project:
+
+> spring init
+
+This command will conclude by downloading a demo.zip file.
+It creates a Maven-based project with only Spring Boot and testing dependencies.
+
+To create application with Web/MVC, JPA, Security dependencies:
+
+> spring init -dweb,jpa,security
+
+The -d flag is for dependencies. 
+`Note`: There should be NO space between `-d` and the dependencies.
+
+If we want to create the same project as above but with Gradle as the build tool:
+
+> spring init -dweb,jpa,security --build gradle
+
+Since the default packaging for both Maven and Gradle is a `Jar` file. If we want packaging as `war`:
+
+> spring init -dweb,jpa,security --build gradle -p war
+
+If we want to specify a directory for the CLI to open the zip file in:
+
+> spring init -dweb,jpa,security --build gradle -p war myapp
+
+The last parameter above indicates that we want to extract the project into the `myapp` directory.
+
+If we want to extract the project into the current directory:
+
+> spring init -dweb,jpa,security --build gradle -p jar -x
+
+If we want to know all the different parameters that the `init` command supports:
+
+> spring help init
+
+To find out what choices are available for the parameters listed in the above command:
+
+> spring init --list
+
+Whether we use Initializr's web-based interface, create our projects from Spring Tool Suite, 
+or use the Spring Boot CLI to initialize a project, 
+projects created using the Spring Boot Initializr have a familiar project layout, 
+not unlike other Java projects we may have developed before.
+

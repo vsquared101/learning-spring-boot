@@ -176,3 +176,35 @@ In the latter case, we can actually open a secure shell (SSH) into our applicati
 Spring Boot is just Spring. Inside, Spring Boot is doing the same kind of bean configuration in Spring that we might do on our own if Spring Boot didn't exist. 
 Thankfully, because Spring Boot does exist, we're freed from dealing with explicit boilerplate configuration and are able to focus on the logic that makes your application unique.
 
+## Getting Started with Spring Boot
+
+Spring Boot Project = Spring Project + Spring Boot Starters + Auto-Configuration
+
+A few convenient options available for kickstarting our project with Spring Boot are listed below:
+
+### Installing Spring Boot CLI
+
+We can install the CLI:
+- From a downloaded distribution.
+- Using the Groovy Environment Manager.
+- With OS X Homebrew.
+- As a port using MacPorts.
+
+Steps to install Spring Boot CLI using SDKMAN(run below commands on the command line):
+
+> curl -s get.sdkman.io | bash
+> source "/Users/habuma/.sdkman/bin/sdkman-init.sh"
+> sdk install springboot
+> spring --version
+
+Commands to get list of available versions, installing a specific version, using one of the installed versions and setting a particular version as default are given below:
+
+> sdk list springboot
+> sdk install springboot 2.0.5.RELEASE
+> sdk use springboot 2.0.5.RELEASE
+> sdk default springboot 2.0.4.RELEASE
+
+### Initializing Spring Boot Project with Spring initializer
+
+Navigate to [Spring Starter](https://start.spring.io/) for more details on this.
+Switch to full-version at the bottom of the page to get more details such as application name, list of dependencies, etc.

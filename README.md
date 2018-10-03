@@ -233,7 +233,7 @@ Unzip the same and we will get a project which includes the below files:
 - `static` folder - To put any static content(JavaScript, stylesheets, images, etc.).
 - `templates` folder - To put templates that render model data.
 
-Using the Initializer from Spring Boot CLI:
+####Using the Initializer from Spring Boot CLI:
 
 To create a baseline Spring Boot project:
 
@@ -279,4 +279,81 @@ Whether we use Initializr's web-based interface, create our projects from Spring
 or use the Spring Boot CLI to initialize a project, 
 projects created using the Spring Boot Initializr have a familiar project layout, 
 not unlike other Java projects we may have developed before.
+
+## Developing Spring Boot Application
+
+Two ways that Spring Boot has added a level of automation to Spring development: starter dependencies and automatic configuration.
+These essential Spring Boot features free us from the tedium and distraction of enabling Spring in our projects
+and let us focus on actually developing our applications.
+
+### Creating a simple readinglist applcation
+
+We will create a Spring Boot application with Spring MVC to handle web requests,
+Thymeleaf to define web views, and Spring Data JPA to persist the reading selections to a database.
+For now, that database will be an embedded H2 database.
+We will write the application code in Java for now. And we'll use Gradle as our build tool of choice.
+
+To create the application with the above starters/dependencies use:
+
+> spring init -dweb,data-jpa,h2,thymeleaf --build gradle readinglist
+
+The above command creates a project with the below files:
+
+- build.gradle - The Gradle build specification.
+- ReadingListApplication.java - The application's bootstrap class and primary Spring configuration class.
+- application.properties - A place to configure application and Spring Boot properties.
+- ReadingListApplicationTests.java - A basic integration test class.
+
+`Bootstrapping Spring`
+
+The `ReadingListApplication` class serves two purposes in a Spring Boot application:
+
+configuration and bootstrapping.
+
+First, it's the central Spring configuration class.
+Even though Spring Boot auto-configuration eliminates the need for a lot of Spring configuration,
+we will need at least a small amount of Spring configuration to enable auto-configuration.
+
+```java
+
+    package readinglist;
+    import org.springframework.boot.SpringApplication;
+    import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+    @SpringBootApplication // Enable component-scanning and auto-configuration
+    public class ReadingListApplication {
+
+        public static void main(String[] args) {
+            SpringApplication.run(ReadingListApplication.class, args); // Bootstrap the application
+        }
+    }
+
+```
+
+The @SpringBootApplication annotation combines three other useful annotations:
+
+1. Spring's @Configuration - Designates a class as a configuration class using Spring's Java-based configuration.
+   When writing configuration, favor Java-based configuration over XML configuration.
+
+2. Spring's @ComponentScan - Enables component-scanning so that the web controller classes and other components we write
+   will be automatically discovered and registered as beans in the Spring application context.
+
+3. Spring Boot's @EnableAutoConfiguration - This humble little annotation is the one line of configuration that
+   enables the magic of Spring Boot auto-configuration.
+   This one line keeps us from having to write the pages of configuration that would be required otherwise.
+
+The main() method in the ReadingListApplication class enables us to run our application as an executable JAR file
+from the command line. It passes a reference to the ReadingListApplication class to SpringApplication.run(),
+along with the command-line arguments, to kick off the application.
+
+Ways to build and run the application using Gradle:
+
+> gradle bootRun
+
+or
+
+> gradle build
+> java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar
+
+Above commands will start a Tomcat server at port 8080.(we will still get 404 Not Found error since we do not have a controller for the root route.)
 

@@ -353,6 +353,7 @@ Ways to build and run the application using Gradle:
 or
 
 > gradle build
+
 > java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar
 
 Above commands will start a Tomcat server at port 8080.(we will still get 404 Not Found error since we do not have a controller for the root route.)

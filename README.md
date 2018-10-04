@@ -233,7 +233,7 @@ Unzip the same and we will get a project which includes the below files:
 - `static` folder - To put any static content(JavaScript, stylesheets, images, etc.).
 - `templates` folder - To put templates that render model data.
 
-####Using the Initializer from Spring Boot CLI:
+#### Using the Initializer from Spring Boot CLI:
 
 To create a baseline Spring Boot project:
 
@@ -357,4 +357,136 @@ or
 > java -jar build/libs/readinglist-0.0.1-SNAPSHOT.jar
 
 Above commands will start a Tomcat server at port 8080.(we will still get 404 Not Found error since we do not have a controller for the root route.)
+
+We will almost never need to change ReadingListApplication.java. 
+If our application requires any additional Spring configuration beyond what Spring Boot auto-configuration provides, 
+it's usually best to write it into separate @Configuration configured classes. (They'll be picked up and used by component-scanning.) 
+In exceptionally simple cases, though, we could add custom configuration to ReadingListApplication.java.
+
+### Testing Spring Boot Applications
+
+The Initializr provides us with a skeleton test class: `ReadingListApplicationTests`.
+This class is more than just a placeholder for tests - it also serves as an example of how to write tests for 
+Spring Boot Applications.
+
+```java
+
+    package readinglist;
+    import org.junit.Test;
+    import org.junit.runner.RunWith;
+    import org.springframework.boot.test.SpringApplicationConfiguration;
+    import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+    import org.springframework.test.context.web.WebAppConfiguration;
+    import readinglist.ReadingListApplication;
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @SpringApplicationConfiguration(classes = ReadingListApplication.class) // Loading context via Spring Boot
+    @WebAppConfiguration
+    public class ReadingListApplicationTests {
+
+        @Test
+        public void contextLoads() {
+        // test that the context loads
+        }
+    }
+
+```
+
+In a typical Spring integration test, 
+we would annotate the test class with @ContextConfiguration to specify how the test should load the Spring application context.
+
+But in order to take full advantage of Spring Boot magic, the @SpringApplicationConfiguration annotation should be used instead.
+ReadingListApplicationTests is annotated with @SpringApplicationConfiguration
+to load the Spring application context from the ReadingListApplication configuration class.
+
+`ReadingListApplicationTests` also includes one simple test method, contextLoads(). 
+It's so simple, in fact, that it's an empty method. 
+But it's sufficient for the purpose of verifying that the application context loads without any problems. 
+If the configuration defined in ReadingListApplication is good, the test will pass. If there are any problems, the test will fail.
+This test method verifies every bit of functionality provided by the application at this point.
+
+#### Configuring Application.properties
+
+The application.properties file given to us by the Initializr is initially empty. 
+In fact, this file is completely optional, so we could remove it completely without impacting the application. 
+But there's also no harm in leaving it in place.
+
+If we want to poke around with application.properties, we can add the following line:
+
+```properties
+
+server.port=8000
+
+```
+
+With this line, we are configuring the embedded Tomcat server to listen on port 8000 instead of the default port 8080.
+We can confirm this by running the application again.
+This demonstrates that the application.properties file comes in handy for 
+fine-grained configuration of the stuff that Spring Boot automatically configures.
+But we can also use it to specify properties used by application code.
+
+The main thing to notice is that at no point do we explicitly ask Spring Boot to
+load application.properties for us. By virtue of the fact that application.properties
+exists, it will be loaded and its properties made available for configuring both Spring
+and application code.
+
+### Dissecting a Spring Boot project build
+
+Spring Boot provides build plugins for both Gradle and Maven to assist in building Spring Boot projects.
+
+```gradle
+
+    buildscript {
+    	ext {
+    		springBootVersion = '2.0.5.RELEASE'
+    	}
+
+    	repositories {
+    		mavenCentral()
+    	}
+
+    	dependencies {
+    		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") // depend on Spring Boot plugin
+    	}
+    }
+
+    apply plugin: 'java'
+    apply plugin: 'eclipse'
+    apply plugin: 'org.springframework.boot' // apply spring boot plugin
+    apply plugin: 'io.spring.dependency-management'
+
+    group = 'com.manning'
+    version = '0.0.1-SNAPSHOT'
+    sourceCompatibility = 1.8
+
+    repositories {
+    	mavenCentral()
+    }
+
+
+    dependencies {
+        // starter dependencies
+    	implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    	implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+    	implementation('org.springframework.boot:spring-boot-starter-web')
+    	runtimeOnly('com.h2database:h2')
+    	testImplementation('org.springframework.boot:spring-boot-starter-test')
+    }
+
+```
+
+Whether we choose Gradle or Maven, Spring Boot's build plugins contribute to the build in a few ways.
+
+We can use the bootRun task to run the application with Gradle.
+Similarly, the Spring Boot Maven plugin provides a `spring-boot:run` goal that achieves the same thing if we are using a Maven build.
+
+The main feature of the build plugins is that they are able to package the project as an executable *uber-JAR*.
+This includes packing all of the application's dependencies within the JAR and
+adding a manifest to the JAR with entries that make it possible to run the application with `java -jar`.
+
+## Using starter dependencies
+
+Without Spring Boot starter dependencies, we have got some homework to do.
+All we want to do is develop a Spring web application with Thymeleaf views that persists its data via JPA.
+But before we can even write our first line of code, 
+we have to go figure out what needs to be put into the build specification to support your plan.
 

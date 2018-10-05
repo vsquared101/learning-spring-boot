@@ -174,7 +174,7 @@ In the latter case, we can actually open a secure shell (SSH) into our applicati
    to automatically configure beans in the Spring application context.
 
 Spring Boot is just Spring. Inside, Spring Boot is doing the same kind of bean configuration in Spring that we might do on our own if Spring Boot didn't exist. 
-Thankfully, because Spring Boot does exist, we're freed from dealing with explicit boilerplate configuration and are able to focus on the logic that makes your application unique.
+Thankfully, because Spring Boot does exist, we're freed from dealing with explicit boilerplate configuration and are able to focus on the logic that makes our application unique.
 
 ## Getting Started with Spring Boot
 
@@ -488,5 +488,271 @@ adding a manifest to the JAR with entries that make it possible to run the appli
 Without Spring Boot starter dependencies, we have got some homework to do.
 All we want to do is develop a Spring web application with Thymeleaf views that persists its data via JPA.
 But before we can even write our first line of code, 
-we have to go figure out what needs to be put into the build specification to support your plan.
+we have to go figure out what needs to be put into the build specification to support our plan.
+
+### Specifying facet-based dependencies
+
+Spring Boot addresses project dependency complexity by providing several dozen "starter" dependencies.
+A starter dependency is essentially a Maven POM that defines transitive dependencies on other libraries
+that together provide support for some functionality.
+any of these starter dependencies are named to indicate the facet or kind of functionality they provide.
+
+For example, the reading-list application is going to be a web application.
+Rather than add several individually chosen library dependencies to the project build,
+it is much easier to simply declare that this is a web application.
+We can do that by adding Spring Boot's web starter to the build.
+We also want to use Thymeleaf for web views and persist data with JPA.
+Therefore, we need the Thymeleaf and Spring Data JPA starter dependencies in the build.
+For testing purposes, we also want libraries that will enable us to run integration
+tests in the context of Spring Boot. Therefore, we also want a test-time dependency on Spring Boot's test starter.
+
+Taken altogether, we have the following five dependencies that the Initializr provided in the Gradle build:
+
+```gradle
+
+    dependencies {
+        compile "org.springframework.boot:spring-boot-starter-web"
+        compile "org.springframework.boot:spring-boot-starter-thymeleaf"
+        compile "org.springframework.boot:spring-boot-starter-data-jpa"
+        compile "com.h2database:h2"
+        testCompile("org.springframework.boot:spring-boot-starter-test")
+    }
+
+```
+
+Via transitive dependencies, adding these four dependencies
+is the equivalent of adding several dozen individual libraries to the build.
+Some of those transitive dependencies include such things as Spring MVC, Spring Data JPA, Thymeleaf,
+as well as any transitive dependencies that those dependencies declare.
+
+In no case did we need to specify the version.
+The versions of the starter dependencies themselves are determined by the version of Spring Boot we are using.
+The starter dependencies themselves determine the versions of the various transitive dependencies that they pull in.
+Be encouraged to know that Spring Boot has been tested to ensure that all of the dependencies pulled in are compatible with each other.
+It is actually very liberating to just specify a starter dependency and not have to worry about which libraries
+and which versions of those libraries we need to maintain.
+
+To know the dependencies that our project uses we can rely on the build tool.
+In the case of Gradle, the `dependencies` task will give us a dependency tree
+that includes every library our project is using and their versions:
+
+> gradle dependencies
+
+We can get a similar dependency tree from a Maven build with the tree goal of the dependency plugin:
+
+> mvn dependency:tree
+
+### Overriding starter transitive dependencies
+
+We can use the facilities provided by the build tool to selective override transitive dependencies if needed.
+For e.g. when using the Spring Boot `Web` starter if we want to exclude the Jackson JSON library,
+we can do so by adding the below to our build.gradle file:
+
+```gradle
+
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
+
+```
+
+To use a specific Jackson version:
+
+```gradle
+
+    compile("com.fasterxml.jackson.core:jackson-databind:2.4.3")
+
+```
+
+To use an older version of Jackson instead of the one that is transitively resolved by Spring Boot Web starter:
+
+```gradle
+
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: 'com.fasterxml.jackson.core'
+    }
+    
+    compile("com.fasterxml.jackson.core:jackson-databind:2.3.1")
+
+```
+
+`Note`: Be *careful* in the above case as the version that we specifically choose may not work well with other transitively pulled dependencies.
+
+## Using automatic configuration
+
+Spring Boot auto-configuration is a runtime (more accurately, application startup-time) process
+that considers several factors to decide what Spring configuration should and should not be applied.
+
+For e.g.
+
+- Is Spring's JdbcTemplate available on the classpath? If so and if there is a Data-Source bean, then auto-configure a JdbcTemplate bean.
+- Is Thymeleaf on the classpath? If so, then configure a Thymeleaf template resolver, view resolver, and template engine.
+- Is Spring Security on the classpath? If so, then configure a very basic web security setup.
+
+There are nearly 200 such decisions that Spring Boot makes with regard to auto-configuration every time an application starts up,
+covering areas such as security, integration, persistence, and web development. All of this auto-configuration serves to
+keep us from having to explicitly write configuration unless absolutely necessary.
+
+### Focusing on application functionality
+
+Spring Boot auto-configuration keeps us focused on writing application code.
+
+The best way to demonstrate how auto-configuration works and helps us when creating applications with Spring Boot
+is to write application code.
+
+#### Defining the domain
+
+The central domain concept in our application is a book that's on a reader's reading list.
+
+```java
+
+    package readinglist;
+    import javax.persistence.Entity;
+    import javax.persistence.GeneratedValue;
+    import javax.persistence.GenerationType;
+    import javax.persistence.Id;
+    
+    @Entity
+    public class Book {
+    
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private Long id;
+    private String reader;
+    private String isbn;
+    private String title;
+    private String author;
+    private String description;
+    
+    public Long getId() {
+        return id;
+    }
+    
+    public void setId(Long id) {
+        this.id = id;
+    }
+    
+    public String getReader() {
+        return reader;
+    }
+    
+    public void setReader(String reader) {
+        this.reader = reader;
+    }
+    
+    public String getIsbn() {
+        return isbn;
+    }
+    
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
+    }
+    
+    public String getTitle() {
+        return title;
+    }
+    
+    public void setTitle(String title) {
+        this.title = title;
+    }
+    
+    public String getAuthor() {
+        return author;
+    }
+    
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+    
+    public String getDescription() {
+        return description;
+    }
+    
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    }
+
+```
+
+The `Book` class is a simple Java object with a handful of properties describing a book and the necessary accessor methods.
+It's annotated with *@Entity* designating it as a `JPA entity`.
+The id property is annotated with *@Id* and *@GeneratedValue* to indicate that this field is the entity's identity and that its value will be automatically provided.
+
+#### Defining the repository interface
+
+Define the repository through which the ReadingList objects will be persisted to the database.
+Because we are using Spring Data JPA, that task is a simple matter of creating an interface that extends Spring Data JPA's `JpaRepository` interface.
+
+```java
+
+    package readinglist;
+    import java.util.List;
+    import org.springframework.data.jpa.repository.JpaRepository;
+    
+    public interface ReadingListRepository extends JpaRepository<Book, Long> {
+        List<Book> findByReader(String reader);
+    }
+
+```
+
+By extending JpaRepository, ReadingListRepository inherits 18 methods for performing common persistence operations.
+
+The JpaRepository interface is parameterized with two parameters: 
+
+1. the domain type that the repository will work with, and
+2. the type of its ID property.
+
+In addition, we have added a findByReader() method through which a reading list can be looked up given a reader's username.
+
+Spring Data provides a special magic of its own, making it possible to define a repository with just an interface.
+The interface will be implemented automatically at runtime when the application is started.
+
+#### Creating the Web Interface
+
+Now that we have the application's domain defined and a repository for persisting objects
+from that domain to the database, all that's left is to create the web front-end.
+A Spring MVC controller given below will handle HTTP requests for the application:
+
+```java
+
+    package readinglist;
+    import org.springframework.beans.factory.annotation.Autowired;
+    import org.springframework.stereotype.RestController;
+    import org.springframework.ui.Model;
+    import org.springframework.web.bind.annotation.PathVariable;
+    import org.springframework.web.bind.annotation.RequestMapping;
+    import org.springframework.web.bind.annotation.RequestMethod;
+    import java.util.List;
+    
+    @RestController
+    @RequestMapping("/")
+    public class ReadingListController {
+    
+    private ReadingListRepository readingListRepository;
+    
+    @Autowired
+    public ReadingListController(ReadingListRepository readingListRepository) {
+        this.readingListRepository = readingListRepository;
+    }
+    
+    @RequestMapping(value="/{reader}", method=RequestMethod.GET)
+    public String readersBooks(@PathVariable("reader") String reader, Model model) {
+        List<Book> readingList = readingListRepository.findByReader(reader);
+        if (readingList != null) {
+            model.addAttribute("books", readingList);
+        }
+        return "readingList";
+    }
+    
+    @RequestMapping(value="/{reader}", method=RequestMethod.POST)
+    public String addToReadingList(@PathVariable("reader") String reader, Book book) {
+        book.setReader(reader);
+        readingListRepository.save(book);
+        return "redirect:/{reader}";
+    }
+    }
+
+```
 
